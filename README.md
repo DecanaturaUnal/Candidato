@@ -425,10 +425,30 @@ Supabase y Cloudflare: quedan en el historial de git aunque después se borren.
 1. Entre a [vercel.com](https://vercel.com) → **Add New → Project** e importe el
    repositorio de GitHub.
 2. Vercel detecta Next.js solo; no hay que tocar la configuración de compilación.
-3. En **Settings → Environment Variables** agregue **todas** las variables de
-   `.env.local`, marcándolas para *Production*, *Preview* y *Development*.
+3. En **Settings → Environment Variables** agregue las **siete** variables que usa
+   la aplicación, marcándolas para *Production*, *Preview* y *Development*:
+
+   | Variable |
+   |---|
+   | `NEXT_PUBLIC_SUPABASE_URL` |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+   | `SUPABASE_SERVICE_ROLE_KEY` |
+   | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` |
+   | `TURNSTILE_SECRET_KEY` |
+   | `IP_HASH_SALT` |
+   | `NEXT_PUBLIC_SITE_URL` |
+
+   **`DATABASE_URL` no va a Vercel.** Solo la usan los scripts de migración, que
+   se ejecutan desde su equipo; es la credencial más potente que existe en el
+   proyecto —acceso directo a Postgres, por fuera de la RLS— y no hay ninguna
+   razón para que viva en el servidor de despliegue.
 4. Ponga `NEXT_PUBLIC_SITE_URL` con el dominio definitivo (no el de vista previa).
 5. Despliegue.
+
+> **Cada rotación de claves exige volver a desplegar.** Las variables
+> `NEXT_PUBLIC_*` se incrustan en el paquete del navegador al compilar: cambiarlas
+> en Vercel no basta, hay que lanzar un *redeploy* para que el JavaScript servido
+> deje de llevar la clave vieja.
 
 Después del primer despliegue:
 
@@ -581,13 +601,27 @@ Antes de publicar el sitio:
 - [ ] **URLs de redes sociales** → `src/config/sitio.ts`
 - [ ] **Responsable del tratamiento de datos y correo de contacto** →
       `src/config/sitio.ts` (obligatorio por la Ley 1581 de 2012)
-- [ ] **Correos reales de los moderadores** en la tabla `admins`
-- [ ] Crear el proyecto de **Supabase** y aplicar migraciones
-- [ ] Crear el widget de **Turnstile**
+- [ ] **Vaciar los comentarios de ejemplo** de la base antes de que el sitio sea
+      alcanzable. El seed deja cinco mensajes firmados con nombres inventados; en
+      un sitio de campaña publicado se leen como apoyos reales de personas que no
+      existen. Se quitan con:
+      `delete from public.comentarios where email like '%@example.com';`
+- [x] **Correos reales de los moderadores** en la tabla `admins`
+- [x] Crear el proyecto de **Supabase** y aplicar migraciones
+- [x] Crear el widget de **Turnstile** y poner las claves reales
+- [x] **Rotar las claves de Supabase** que estuvieron expuestas
 - [ ] Confirmar con la publicista las **tipografías**: las originales no vienen con
       los archivos. Se eligieron *Fira Sans Extra Condensed* para titulares y
       *Fira Sans* para texto, midiendo el mockup — reproducen sus proporciones con
       menos del 1 % de desvío y los mismos saltos de línea, pero no está confirmado
       que sean las mismas.
-- [ ] Borrar `public/_referencia/`, que solo sirve para comparar durante el
-      desarrollo.
+- [x] ~~Borrar `public/_referencia/`~~ — innecesario: la carpeta está en
+      `.gitignore`, así que nunca llega al repositorio ni, por tanto, a Vercel.
+      Borrarla en local solo dejaría `verificar:maqueta` sin referencia contra la
+      cual comparar. Déjela donde está.
+
+Mientras quede cualquier texto en `TODO`, `robots.txt` se sirve con `Disallow: /`
+y sin mapa del sitio: un despliegue de prueba no es privado por ser poco conocido
+—los dominios de Vercel quedan en los registros públicos de Certificate
+Transparency— y los marcadores no deben acabar indexados junto al nombre del
+candidato. Se reabre solo al llegar los textos reales (`src/content/pendientes.ts`).
