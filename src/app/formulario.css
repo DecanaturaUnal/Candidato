@@ -1,0 +1,430 @@
+/* ==========================================================================
+   FORMULARIO EN MODAL Y MURO DE MENSAJES
+   --------------------------------------------------------------------------
+   La modal se monta con un portal en <body>, fuera del lienzo: no la afecta ni
+   el `overflow: hidden` de la pieza ni su escala. Por eso aqui se usan pixeles
+   normales y no la unidad `--u`.
+   ========================================================================== */
+
+/* --- Ventana modal ------------------------------------------------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(12px, 4vh, 48px) 16px;
+  overflow-y: auto;
+  background: rgb(6 12 30 / 72%);
+  backdrop-filter: blur(3px);
+}
+
+.modal__caja {
+  position: relative;
+  width: min(100%, 560px);
+  background: #fff;
+  color: var(--azul);
+  border-radius: 10px;
+  box-shadow: 0 24px 60px rgb(4 9 24 / 45%);
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.modal__cerrar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #6b7899;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal__cerrar:hover {
+  background: #eef2f9;
+  color: var(--azul);
+}
+
+/* --- Formulario ---------------------------------------------------------- */
+.formulario {
+  display: grid;
+  gap: 16px;
+}
+
+.formulario__titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--azul);
+}
+
+.formulario__entradilla {
+  margin: -8px 0 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #55617f;
+}
+
+.campo {
+  display: grid;
+  gap: 6px;
+}
+
+.campo > label,
+.formulario label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--azul);
+}
+
+.campo input[type="text"],
+.campo input[type="email"],
+.campo textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #c4cee0;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--azul);
+  font: inherit;
+  font-size: 15px;
+}
+
+.campo textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+.campo input:focus-visible,
+.campo textarea:focus-visible {
+  outline: 2px solid var(--turquesa);
+  outline-offset: 1px;
+  border-color: var(--turquesa);
+}
+
+.campo input[aria-invalid="true"],
+.campo textarea[aria-invalid="true"] {
+  border-color: #c0392b;
+}
+
+.campo__ayuda {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #6b7899;
+}
+
+.campo__error,
+.formulario__error-general {
+  margin: 0;
+  font-size: 13px;
+  color: #c0392b;
+}
+
+.formulario__error-general {
+  padding: 10px 12px;
+  background: #fdecea;
+  border-left: 3px solid #c0392b;
+  border-radius: 3px;
+}
+
+.campo__contador {
+  margin: 0;
+  font-size: 12.5px;
+  color: #6b7899;
+  text-align: right;
+}
+
+.campo__contador--poco {
+  color: #b26a00;
+  font-weight: 600;
+}
+
+.campo__casilla {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  align-items: start;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #45527a;
+  cursor: pointer;
+}
+
+.campo__casilla input {
+  margin-top: 2px;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--turquesa);
+}
+
+.campo__obligatorio {
+  color: #6b7899;
+  font-size: 12.5px;
+}
+
+/* El campo trampa nunca debe verse ni recibir foco, pero tiene que existir en el
+   DOM para que los robots lo encuentren. `display:none` lo delataria: se saca de
+   pantalla. */
+.trampa {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.formulario__captcha {
+  min-height: 66px;
+}
+
+.formulario__aviso {
+  margin: 0;
+  padding: 10px 12px;
+  background: #fff8e1;
+  border-left: 3px solid #e0a800;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #6b5200;
+}
+
+.formulario__acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.formulario__nota {
+  margin: 0;
+  font-size: 12.5px;
+  color: #6b7899;
+  text-align: right;
+}
+
+.formulario__exito {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+}
+
+.formulario__exito p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #45527a;
+}
+
+/* --- Botones ------------------------------------------------------------- */
+.boton {
+  padding: 10px 18px;
+  border: 1px solid #c4cee0;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--azul);
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: #f2f6fc;
+}
+
+.boton--principal {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+}
+
+.boton--principal:hover {
+  background: #1b2950;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ==========================================================================
+   MURO DE MENSAJES  (va sobre el escenario oscuro)
+   ========================================================================== */
+.muro {
+  scroll-margin-top: 24px;
+}
+
+.muro__pestanas {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.muro__pestana {
+  padding: 8px 16px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 4%);
+  color: #c6d0e4;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.muro__pestana--activa {
+  background: var(--turquesa);
+  border-color: var(--turquesa);
+  color: #fff;
+}
+
+.muro__lista {
+  display: grid;
+  gap: 14px;
+}
+
+.muro__vacio {
+  margin: 0;
+  padding: 22px;
+  background: rgb(255 255 255 / 4%);
+  border-radius: 4px;
+  color: #b9c4da;
+  font-size: 15px;
+}
+
+.muro__mas {
+  margin-top: 18px;
+  justify-self: start;
+  background: transparent;
+  border-color: rgb(255 255 255 / 20%);
+  color: #dbe3f2;
+}
+
+.muro__mas:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+/* --- Tarjeta de comentario ----------------------------------------------- */
+.comentario {
+  padding: clamp(16px, 2.2vw, 22px);
+  background: rgb(255 255 255 / 5%);
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+}
+
+.comentario--destacado {
+  border-left-color: var(--limon);
+  background: rgb(255 255 255 / 8%);
+}
+
+.comentario__cabecera {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.comentario__nombre {
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  color: #fff;
+}
+
+.comentario__fecha {
+  font-size: 12.5px;
+  color: #93a0bd;
+}
+
+.comentario__marca {
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgb(235 234 137 / 16%);
+  color: var(--limon);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.comentario__mensaje {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #dbe3f2;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* Respuesta del decano: claramente diferenciada del mensaje original. */
+.respuesta {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--turquesa);
+  background: rgb(59 167 179 / 12%);
+  border-radius: 3px;
+}
+
+.respuesta__firma {
+  margin: 0 0 5px;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #7fd3dc;
+}
+
+.respuesta__texto {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #dbe3f2;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.comentario__pie {
+  margin-top: 12px;
+}
+
+.like {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 999px;
+  background: transparent;
+  color: #b9c4da;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.like svg {
+  width: 17px;
+  height: 17px;
+}
+
+.like:hover {
+  border-color: var(--turquesa);
+  color: #fff;
+}
+
+.like--activo {
+  border-color: var(--turquesa);
+  background: rgb(59 167 179 / 18%);
+  color: #7fd3dc;
+}
+
+.like:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}

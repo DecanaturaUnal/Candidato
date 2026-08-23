@@ -1,0 +1,325 @@
+/* ==========================================================================
+   PANEL DE MODERACION  (/admin)
+   --------------------------------------------------------------------------
+   Interfaz de trabajo, no pieza de campana: prima la densidad y la legibilidad
+   sobre la marca. Fondo claro porque aqui se lee mucho texto seguido.
+   ========================================================================== */
+
+.panel {
+  color-scheme: light;
+  min-height: 100vh;
+  background: #f4f6fb;
+  color: #2a3450;
+  padding: clamp(16px, 3vw, 32px);
+}
+
+.panel__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto 20px;
+}
+
+.panel__titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--azul);
+}
+
+.panel__quien {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  color: #6b7899;
+}
+
+.panel__herramientas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.panel__herramientas form {
+  margin: 0;
+}
+
+.panel__contador {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--limon);
+  color: #4a4600;
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.panel__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto 18px;
+}
+
+.panel__pestanas {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.panel .muro__pestana {
+  border-color: #ccd6e6;
+  background: #fff;
+  color: #4a5878;
+  text-decoration: none;
+}
+
+.panel .muro__pestana--activa {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+}
+
+.panel__buscador {
+  display: flex;
+  gap: 8px;
+}
+
+.panel__buscador input {
+  min-width: min(300px, 60vw);
+  padding: 9px 12px;
+  border: 1px solid #ccd6e6;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  font-size: 14.5px;
+  color: #2a3450;
+}
+
+.panel__lista {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.panel .muro__vacio {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #e2e8f3;
+  color: #6b7899;
+}
+
+/* --- Fila de la bandeja --------------------------------------------------- */
+.fila {
+  background: #fff;
+  border: 1px solid #e2e8f3;
+  border-left: 4px solid #ccd6e6;
+  border-radius: 6px;
+  padding: 16px 18px;
+}
+
+.fila--pendiente {
+  border-left-color: #e0a800;
+}
+.fila--aprobado {
+  border-left-color: var(--turquesa);
+}
+.fila--rechazado {
+  border-left-color: #b9c2d4;
+  opacity: 0.78;
+}
+
+.fila__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.fila__nombre {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--azul);
+  margin-right: 8px;
+}
+
+.fila__aclaracion {
+  font-size: 12px;
+  color: #8a95ae;
+  margin-right: 8px;
+}
+
+.fila__correo {
+  font-size: 13px;
+  color: #4a72b8;
+}
+
+.fila__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: #6b7899;
+}
+
+.chip {
+  padding: 2px 9px;
+  border-radius: 3px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.chip--pendiente {
+  background: #fff4d6;
+  color: #7a5c00;
+}
+.chip--aprobado {
+  background: #ddf1f3;
+  color: #1c6b73;
+}
+.chip--rechazado {
+  background: #eceff5;
+  color: #626e8a;
+}
+.chip--destacado {
+  background: #f6f5cc;
+  color: #5c5900;
+}
+.chip--aviso {
+  background: #fde7e4;
+  color: #9c3122;
+}
+
+.fila__mensaje {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.fila__rastro {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  color: #8a95ae;
+}
+
+.fila__respuesta {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  background: #f0f9fa;
+  border-left: 3px solid var(--turquesa);
+  border-radius: 3px;
+  display: grid;
+  gap: 8px;
+}
+
+.fila__respuesta label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1c6b73;
+}
+
+.fila__respuesta textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #b7d9dd;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 14.5px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.fila__respuesta-texto {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.fila__acciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fila__acciones .boton {
+  padding: 7px 14px;
+  font-size: 14px;
+}
+
+.boton--peligro {
+  border-color: #e3b3ac;
+  color: #9c3122;
+}
+
+.boton--peligro:hover {
+  background: #fdecea;
+}
+
+/* --- Pantalla de acceso --------------------------------------------------- */
+.acceso {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acceso__caja {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 16px;
+  padding: clamp(24px, 4vw, 34px);
+  background: #fff;
+  border: 1px solid #e2e8f3;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgb(36 52 104 / 8%);
+}
+
+.acceso__titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--azul);
+}
+
+.acceso__caja .campo input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccd6e6;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 15px;
+}
+
+.acceso__mensaje {
+  margin: 0;
+  padding: 10px 12px;
+  background: #eef7f8;
+  border-left: 3px solid var(--turquesa);
+  border-radius: 3px;
+  font-size: 13.5px;
+  color: #1c6b73;
+}
+
+.acceso__nota {
+  margin: 0;
+  font-size: 12.5px;
+  color: #8a95ae;
+}

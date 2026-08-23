@@ -1,0 +1,13 @@
+# Dependencias de las utilidades de operación.
+#
+# Instalación (desde la raíz del proyecto, con el entorno virtual activado):
+#   pip install -r scripts/python/requirements.txt
+
+# Cliente HTTP para hablar con la API REST de Supabase
+httpx==0.28.1
+
+# Lectura de .env.local
+python-dotenv==1.1.1
+
+# Generación de archivos .xlsx
+openpyxl==3.1.5

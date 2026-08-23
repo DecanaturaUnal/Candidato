@@ -1,0 +1,166 @@
+/* ==========================================================================
+   ZONA DE EXTENSION
+   --------------------------------------------------------------------------
+   Todo lo que va DEBAJO de la pieza aprobada: las secciones de audiencia a las
+   que apunta la barra de navegacion y el muro de mensajes de la comunidad.
+
+   Nada de esto existe en el mockup, asi que no se maqueta con `--u` ni se escala
+   con el lienzo: usa tipografia de tamano normal y legible. Se alinea al ancho
+   del lienzo para que la pagina se lea como una sola columna, y toma los colores
+   del escenario oscuro sobre el que se apoya.
+   ========================================================================== */
+
+.extension {
+  width: min(100vw, calc(var(--canvas-ancho) * var(--canvas-scale)));
+  margin-top: clamp(28px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 4vw, 52px);
+  color: #e8edf7;
+  padding-inline: clamp(18px, 3vw, 4px);
+  padding-bottom: clamp(40px, 7vw, 96px);
+}
+
+/* --- Encabezado comun de bloque ----------------------------------------- */
+.bloque__titulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 3.4vw, 34px);
+  letter-spacing: 0.2px;
+  color: #fff;
+}
+
+/* Bloque turquesa: el mismo recurso que separa las etiquetas del nav. */
+.bloque__titulo::after {
+  content: "";
+  width: 18px;
+  height: 0.72em;
+  background: var(--turquesa);
+  flex: none;
+}
+
+/* --- Secciones de audiencia ---------------------------------------------- */
+.audiencias {
+  display: grid;
+  gap: clamp(16px, 2.2vw, 22px);
+}
+
+.audiencia {
+  /* Compensa la barra de navegacion al saltar con un ancla */
+  scroll-margin-top: clamp(16px, 4vw, 40px);
+  padding: clamp(18px, 2.6vw, 26px);
+  background: rgb(255 255 255 / 4%);
+  border-left: 3px solid var(--turquesa);
+  border-radius: 2px;
+}
+
+.audiencia__entradilla {
+  margin: 0 0 12px;
+  font-size: clamp(14px, 1.6vw, 16px);
+  line-height: 1.55;
+  color: #cdd6e8;
+}
+
+.audiencia__puntos {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 7px;
+  font-size: clamp(13.5px, 1.5vw, 15px);
+  line-height: 1.55;
+  color: #b9c4da;
+}
+
+.audiencia__puntos li::marker {
+  color: var(--turquesa);
+}
+
+/* Marca visible de contenido pendiente, para que no se publique por descuido. */
+.pendiente {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 2px 8px;
+  border: 1px dashed rgb(235 234 137 / 55%);
+  border-radius: 3px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--limon);
+}
+
+/* ==========================================================================
+   DOCUMENTO LEGAL  (/privacidad)
+   --------------------------------------------------------------------------
+   Hoja blanca sobre el escenario, como la propia pieza: un texto legal tiene que
+   leerse comodo, no en claro sobre oscuro.
+   ========================================================================== */
+.documento {
+  width: min(100vw - 32px, 760px);
+  margin-block: clamp(24px, 5vw, 64px);
+  padding: clamp(26px, 5vw, 56px);
+  background: #fff;
+  color: #34405f;
+  border-radius: 4px;
+  box-shadow:
+    0 2px 4px rgb(4 9 24 / 30%),
+    0 26px 60px -18px rgb(4 9 24 / 55%);
+  font-size: 15.5px;
+  line-height: 1.65;
+}
+
+.documento__volver {
+  display: inline-block;
+  margin-bottom: 22px;
+  color: var(--turquesa);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.documento__volver:hover {
+  text-decoration: underline;
+}
+
+.documento h1 {
+  margin: 0 0 20px;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 4.4vw, 38px);
+  line-height: 1.15;
+  color: var(--azul);
+}
+
+.documento h2 {
+  margin: 32px 0 10px;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 21px;
+  color: var(--azul);
+}
+
+.documento p {
+  margin: 0 0 14px;
+}
+
+.documento ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.documento li::marker {
+  color: var(--turquesa);
+}
+
+.documento strong {
+  color: var(--azul);
+}
+
+.documento .pendiente {
+  color: #8a6d00;
+  border-color: #d9b400;
+}

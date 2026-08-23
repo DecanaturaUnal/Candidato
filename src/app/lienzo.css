@@ -1,0 +1,495 @@
+/* ==========================================================================
+   LIENZO DE CAMPANA - maqueta fiel al mockup aprobado (896 x 1600 px)
+   --------------------------------------------------------------------------
+   Tecnica de escalado: el lienzo es un contenedor de consulta (container query)
+   y TODA medida interna se expresa en `--u`, donde 1u == 1 px del mockup.
+   Al cambiar el ancho del contenedor, `--u` cambia y la pieza entera se reescala
+   como una unidad, sin re-acomodar nada.
+
+   Se eligio `cqw` en vez de `transform: scale()` porque el navegador maqueta y
+   rasteriza el texto ya en su tamano final: no hay capa compositada intermedia,
+   asi que no se pierde nitidez. Ademas el caso movil sale gratis (el lienzo pasa
+   a 100vw y todo lo demas lo sigue solo) y no hay que compensar altura a mano.
+   ========================================================================== */
+
+:root {
+  --azul: #243468;
+  --turquesa: #3ba7b3;
+  --celeste: #ebf4fd;
+  --limon: #ebea89;
+
+  /* Factor de "vista alejada". 1 = tamano real del mockup. */
+  --canvas-scale: 0.85;
+  --canvas-ancho: 900px;
+
+  /* Escenario: dos azules de marca oscurecidos, no un gris neutro.
+     Van bastante mas oscuros que el azul de la pieza (#243468) a proposito: si se
+     acercan, el pie de pagina se funde con el fondo y el lienzo pierde su canto. */
+  --escena-base: #0c1530;
+  --escena-alta: #16224b;
+  --fondo-escenario: var(--escena-base);
+
+  /* Inclinacion del bloque claro de la cabecera (21,6 u de caida sobre 226 u de
+     ancho). El escenario reutiliza ese mismo angulo para que el fondo pertenezca
+     a la pieza en vez de ser un telon cualquiera. */
+  --angulo-marca: 5.46deg;
+}
+
+/* ==========================================================================
+   ESCENARIO
+   --------------------------------------------------------------------------
+   El lienzo es una pieza grafica de ancho fijo, asi que lo que lo rodea tiene que
+   comportarse como el soporte donde esa pieza esta puesta, no como un relleno.
+   Se construye por capas, todas en CSS (sin imagenes ni peticiones extra):
+
+     1. division diagonal en el angulo de la propia campana
+     2. dos focos de color de marca, muy tenues, que dan direccion a la luz
+     3. rayado fino en el mismo angulo, para que el color no quede plano
+     4. vineta que cierra los bordes y empuja la mirada al centro
+
+   Sobre ese fondo oscuro, el blanco de la pieza corta y se lee como impresa.
+   ========================================================================== */
+.escenario {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100vh;
+  background-color: var(--escena-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block: clamp(28px, 5vw, 76px);
+}
+
+/* Capas 1 y 2: diagonal de marca + focos de color.
+   Van fijas al viewport: la pieza se desplaza, el soporte se queda quieto. Si
+   scrollaran con el contenido, mas abajo el escenario quedaria en color plano. */
+.escenario::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    /* Halo detras del lienzo: hace que la hoja se lea iluminada y no recortada */
+    radial-gradient(
+      46% 36% at 50% 24%,
+      rgb(128 186 224 / 15%),
+      transparent 72%
+    ),
+    radial-gradient(
+      60% 44% at 15% 4%,
+      rgb(59 167 179 / 32%),
+      transparent 70%
+    ),
+    radial-gradient(
+      54% 40% at 92% 84%,
+      rgb(235 234 137 / 11%),
+      transparent 72%
+    ),
+    linear-gradient(
+      calc(180deg + var(--angulo-marca)),
+      var(--escena-alta) 0 43.4%,
+      var(--escena-base) 44.2% 100%
+    );
+}
+
+/* Capas 3 y 4: rayado fino y vineta */
+.escenario::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      calc(90deg + var(--angulo-marca)),
+      rgb(255 255 255 / 3%) 0 1px,
+      transparent 1px 8px
+    ),
+    radial-gradient(
+      125% 95% at 50% 42%,
+      transparent 42%,
+      rgb(4 9 24 / 62%) 100%
+    );
+}
+
+/*
+  El lienzo se despega con una sombra de tres tiempos -- contacto, media distancia
+  y ambiental -- en vez de un unico desenfoque plano: es lo que hace que se lea
+  como una hoja apoyada y no como un rectangulo pegado encima.
+*/
+.canvas {
+  position: relative;
+  width: min(100vw, calc(var(--canvas-ancho) * var(--canvas-scale)));
+  container-type: inline-size;
+  background: #fff;
+  box-shadow:
+    /* filo: separa el canto del lienzo del fondo incluso donde la pieza es azul */
+    0 0 0 1px rgb(255 255 255 / 9%),
+    0 2px 4px rgb(2 6 18 / 40%),
+    0 14px 30px rgb(2 6 18 / 34%),
+    0 52px 96px -22px rgb(2 6 18 / 62%);
+}
+
+/* Filo superior apenas insinuado, para dar grosor al canto de la hoja. */
+.canvas::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: rgb(255 255 255 / 55%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* `--u` se define en un hijo del contenedor: las unidades cqw se resuelven
+   contra el ancestro contenedor mas cercano, no contra el elemento mismo. */
+.lienzo {
+  --u: calc(100cqw / 896);
+  position: relative;
+  overflow: hidden;
+  color: var(--azul);
+  font-family: var(--fuente-texto), system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   CABECERA
+   ========================================================================== */
+.cabecera {
+  position: relative;
+  height: calc(505 * var(--u));
+  background: #fff;
+}
+
+.cabecera__franja {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(259 * var(--u));
+  height: calc(246 * var(--u));
+  background: var(--turquesa);
+  z-index: 1;
+}
+
+/* Bloque claro vertical detras de la figura. El degradado con corte duro reproduce
+   los dos tonos exactos del mockup: crema sobre blanco y verde agua sobre turquesa. */
+.cabecera__bloque {
+  position: absolute;
+  z-index: 2;
+}
+
+.marca {
+  position: absolute;
+}
+
+.marca img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* La figura de Gustavo trae horneados el bloque limon y su propia franja turquesa. */
+.marca--figura { z-index: 3; }
+
+/* El lockup va encima de la figura: la "O" de GUSTAVO pisa el sueter. */
+.marca--lockup { z-index: 4; }
+
+.marca--eslogan { z-index: 5; }
+.marca--planilla { z-index: 5; }
+
+/* ==========================================================================
+   BARRA DE NAVEGACION
+   ========================================================================== */
+.navegacion {
+  position: relative;
+  height: calc(66 * var(--u));
+  background: #fff;
+}
+
+.navegacion__barra {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(13 * var(--u));
+  height: calc(39 * var(--u));
+  background: var(--azul);
+}
+
+.navegacion__separador {
+  position: absolute;
+  top: calc(7 * var(--u));
+  height: calc(53 * var(--u));
+  background: var(--turquesa);
+}
+
+.navegacion__enlace {
+  position: absolute;
+  top: calc(13 * var(--u));
+  height: calc(39 * var(--u));
+  display: flex;
+  align-items: center;
+  transform: translateX(-50%);
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: calc(35 * var(--u));
+  letter-spacing: calc(0.2 * var(--u));
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   SECCION "CONSTRUIR FUTURO"
+   ========================================================================== */
+.construir {
+  position: relative;
+  background: #fff;
+  padding-bottom: calc(11 * var(--u));
+}
+
+.construir__titulo {
+  position: absolute;
+  left: calc(38 * var(--u));
+  top: calc(6 * var(--u));
+  margin: 0;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: calc(60.5 * var(--u));
+  line-height: 1;
+  letter-spacing: calc(-0.3 * var(--u));
+  color: var(--azul);
+}
+
+/* --- Columna izquierda: grilla de fotos + parrafo (nada de esto crece) --- */
+.construir__izq {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(736 * var(--u));
+  pointer-events: none;
+}
+
+.construir__grilla {
+  position: absolute;
+  left: calc(38 * var(--u));
+  top: calc(84 * var(--u));
+  width: calc(374 * var(--u));
+  display: grid;
+  grid-template-columns: calc(181 * var(--u)) calc(180 * var(--u));
+  grid-template-rows: calc(149 * var(--u)) calc(150 * var(--u));
+  column-gap: calc(13 * var(--u));
+  row-gap: calc(21 * var(--u));
+}
+
+.construir__foto {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.construir__foto img {
+  display: block;
+}
+
+.construir__parrafo-izq {
+  position: absolute;
+  left: calc(43 * var(--u));
+  top: calc(419 * var(--u));
+  width: calc(366 * var(--u));
+  margin: 0;
+}
+
+/* --- Columna derecha: acordeones (esta si crece) ------------------------- */
+.construir__der {
+  margin-left: calc(440 * var(--u));
+  width: calc(432 * var(--u));
+  padding-top: calc(82 * var(--u));
+  min-height: calc(643 * var(--u));
+}
+
+.parrafo {
+  font-size: calc(12.3 * var(--u));
+  line-height: calc(16.8 * var(--u));
+  color: #3c4a75;
+  text-align: left;
+  white-space: pre-line;
+}
+
+.construir__parrafo-der {
+  margin: calc(29 * var(--u)) 0 0;
+  width: calc(404 * var(--u));
+}
+
+.construir__destacada {
+  margin-top: calc(33.4 * var(--u));
+  width: calc(431 * var(--u));
+  height: calc(337 * var(--u));
+  overflow: hidden;
+}
+
+/* --- Acordeones ---------------------------------------------------------- */
+.acordeon { border: 0; }
+
+.acordeon__boton {
+  display: flex;
+  align-items: stretch;
+  gap: calc(2 * var(--u));
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.acordeon__titulo {
+  display: flex;
+  align-items: center;
+  height: calc(38 * var(--u));
+  padding-inline: calc(6.3 * var(--u));
+  background: var(--azul);
+  color: #fff;
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: calc(30 * var(--u));
+  letter-spacing: calc(0.2 * var(--u));
+  white-space: nowrap;
+}
+
+.acordeon__cola {
+  width: calc(24 * var(--u));
+  height: calc(38 * var(--u));
+  background: var(--turquesa);
+  flex: none;
+}
+
+.acordeon + .acordeon { margin-top: calc(6 * var(--u)); }
+
+.acordeon__cuerpo {
+  overflow: hidden;
+  padding-top: calc(6 * var(--u));
+}
+
+.acordeon__cuerpo p {
+  margin: 0 0 calc(6 * var(--u));
+  font-size: calc(12.3 * var(--u));
+  line-height: calc(16.8 * var(--u));
+  color: #3c4a75;
+}
+
+/* ==========================================================================
+   PIE DE PAGINA
+   ========================================================================== */
+.pie {
+  position: relative;
+  height: calc(293 * var(--u));
+  background: #fff;
+}
+
+.pie__azul {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: calc(225 * var(--u));
+  background: var(--azul);
+}
+
+.pie__lema {
+  position: absolute;
+  left: calc(53 * var(--u));
+  top: calc(54 * var(--u));
+  width: calc(300 * var(--u));
+  margin: 0;
+  color: #fff;
+  font-style: italic;
+  font-weight: 700;
+  font-size: calc(34 * var(--u));
+  line-height: calc(33 * var(--u));
+  text-align: center;
+}
+
+.pie__tarjeta {
+  position: absolute;
+  left: calc(443 * var(--u));
+  top: calc(69 * var(--u));
+  width: calc(368 * var(--u));
+  height: calc(98 * var(--u));
+  background: var(--celeste);
+  border-radius: calc(20 * var(--u));
+}
+
+.pie__icono {
+  position: absolute;
+  left: calc(592 * var(--u));
+  top: calc(20 * var(--u));
+  width: calc(66 * var(--u));
+  height: calc(66 * var(--u));
+  z-index: 2;
+}
+
+.pie__invitacion {
+  position: absolute;
+  left: calc(443 * var(--u));
+  top: calc(89 * var(--u));
+  width: calc(368 * var(--u));
+  margin: 0;
+  text-align: center;
+  color: var(--azul);
+  font-style: italic;
+  font-weight: 600;
+  font-size: calc(15 * var(--u));
+  line-height: calc(17 * var(--u));
+}
+
+.pie__campo {
+  position: absolute;
+  left: calc(476 * var(--u));
+  top: calc(133 * var(--u));
+  width: calc(302 * var(--u));
+  height: calc(24 * var(--u));
+  border-radius: calc(6 * var(--u));
+  border: calc(1 * var(--u)) solid #c9d3e2;
+  background: #fff;
+  padding-inline: calc(8 * var(--u));
+  font: inherit;
+  font-size: calc(12 * var(--u));
+  color: var(--azul);
+  cursor: pointer;
+}
+
+.pie__campo::placeholder { color: #9aa7c0; }
+
+.pie__redes {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(192 * var(--u));
+  display: flex;
+  justify-content: center;
+  gap: calc(32.5 * var(--u));
+}
+
+.pie__red {
+  width: calc(71 * var(--u));
+  height: calc(71 * var(--u));
+  border-radius: 50%;
+  background: var(--turquesa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.pie__red svg { width: 58%; height: 58%; display: block; }
+
+.pie__privacidad {
+  position: absolute;
+  right: calc(14 * var(--u));
+  top: calc(206 * var(--u));
+  color: rgb(255 255 255 / 42%);
+  font-size: calc(7.5 * var(--u));
+  text-decoration: none;
+}
+
+.pie__privacidad:hover { color: #fff; text-decoration: underline; }

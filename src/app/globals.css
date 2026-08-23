@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@import "./lienzo.css";
+@import "./extension.css";
+@import "./formulario.css";
+@import "./panel.css";
+
+/* Tokens de marca expuestos tambien a Tailwind, para el panel /admin y el muro. */
+@theme inline {
+  --color-azul: #243468;
+  --color-turquesa: #3ba7b3;
+  --color-celeste: #ebf4fd;
+  --color-limon: #ebea89;
+  --font-titulo: var(--fuente-titulo);
+  --font-texto: var(--fuente-texto);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/*
+  El fondo del escenario tambien va en <html>: asi el rebote del scroll en macOS e
+  iOS no descubre una franja blanca por encima o por debajo de la pagina.
+  `color-scheme: dark` oscurece la barra de desplazamiento para que acompane al
+  soporte; dentro del lienzo se vuelve a claro, porque ahi los controles del
+  formulario deben verse sobre la pieza, que es blanca.
+*/
+html {
+  background: var(--fondo-escenario);
+  color-scheme: dark;
+}
+
+/* Los enlaces del nav bajan a las secciones de audiencia: el salto se acompana. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--fondo-escenario);
+  color: var(--azul);
+  font-family: var(--fuente-texto), system-ui, sans-serif;
+}
+
+/* Superficies claras: la pieza, la modal del formulario y el documento legal.
+   Sin esto heredarian el `color-scheme: dark` de <html> y los controles de
+   formulario (casillas, campos) se pintarian oscuros sobre fondo blanco. */
+.lienzo,
+.modal__caja,
+.documento {
+  color-scheme: light;
+}
