@@ -12,7 +12,7 @@
  */
 import sharp from "sharp";
 import path from "node:path";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 
 const rutaRender = process.argv[2] ?? "scripts/salida/render.png";
 const rutaMockup = process.argv[3] ?? "assets/referencia/image.jpeg";
@@ -98,10 +98,30 @@ const enFoto = (x, y) =>
     ([l, t, w, h]) => x >= l && x < l + w && y >= t && y < t + h,
   );
 
+/**
+ * Banda de arriba que tapa la barra superior fija.
+ *
+ * La barra es cromo de la web, no parte de la pieza aprobada: comparar esos pixeles
+ * contra el mockup no mide nada. El alto lo escribe captura.mjs, medido sobre la
+ * pagina real, porque depende del ancho del viewport. Si el archivo no esta --por
+ * ejemplo tras una captura hecha con una version anterior-- se descuenta 0 y la
+ * comparacion se comporta como siempre.
+ */
+let altoBarra = 0;
+try {
+  const { alto } = JSON.parse(
+    await readFile(path.join(salidaDir, "franja-barra.json"), "utf8"),
+  );
+  altoBarra = Number(alto) || 0;
+} catch {
+  altoBarra = 0;
+}
+
 let distintosSinFotos = 0;
 let totalSinFotos = 0;
 for (let y = 0; y < H; y++) {
   for (let x = 0; x < W; x++) {
+    if (y < altoBarra) continue;
     if (enFoto(x, y)) continue;
     totalSinFotos++;
     const j = (y * W + x) * 3;
@@ -116,7 +136,10 @@ for (let y = 0; y < H; y++) {
 const pct = ((distintos / (W * H)) * 100).toFixed(2);
 const pctSin = ((distintosSinFotos / totalSinFotos) * 100).toFixed(2);
 console.log(`Pixeles con desviacion: ${distintos} de ${W * H}  (${pct} %)`);
-console.log(`  excluyendo las fotografias: ${pctSin} %  <- esto mide la maquetacion`);
+console.log(
+  `  excluyendo fotografias${altoBarra ? ` y la franja de la barra (${altoBarra} px)` : ""}: ` +
+    `${pctSin} %  <- esto mide la maquetacion`,
+);
 console.log("Desviacion por franja de 100 px de alto:");
 porFranja.forEach((n, i) => {
   const p = (n / (W * 100)) * 100;

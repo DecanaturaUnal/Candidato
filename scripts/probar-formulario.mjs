@@ -38,7 +38,7 @@ comprobar(
   (await pagina.locator(".modal").count()) === 0,
 );
 
-await pagina.locator(".pie__campo").click();
+await pagina.locator("#contenido .pie__campo").click();
 await pagina.waitForSelector(".modal", { timeout: 5000 });
 comprobar("el campo del pie abre el formulario completo", true);
 
@@ -49,7 +49,7 @@ comprobar(
 );
 
 // La composicion del pie no debe cambiar de alto al abrir la modal
-const pie = await pagina.locator(".pie").boundingBox();
+const pie = await pagina.locator("#contenido .pie").boundingBox();
 comprobar(
   "el pie de la pieza conserva su alto",
   Math.abs(pie.height - 293 * (pie.width / 896)) < 1.5,

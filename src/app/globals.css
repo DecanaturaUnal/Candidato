@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "./lienzo.css";
+@import "./fondo.css";
+@import "./barra.css";
 @import "./extension.css";
 @import "./formulario.css";
 @import "./panel.css";

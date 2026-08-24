@@ -1,0 +1,80 @@
+/* ==========================================================================
+   FONDO DINAMICO
+   --------------------------------------------------------------------------
+   Sustituye al azul plano que habia detras de la pieza. Tres capas:
+
+     1. gradiente de marca  -- se pinta siempre: es lo que se ve antes de que el
+                               clon exista y lo unico que queda si el navegador no
+                               soporta `filter`
+     2. clon desenfocado    -- copia ampliada del propio contenido (ver
+                               FondoDesenfocado.tsx), que se desplaza con el scroll
+     3. velo                -- azul de marca semitransparente
+
+   El velo NO es decorativo: la zona de extension (audiencias y muro) escribe en
+   claro sobre oscuro, y sin el, alli donde por detras pasa la parte blanca de la
+   pieza el texto quedaria ilegible. Con la densidad actual, el peor caso --blanco
+   detras-- deja el texto de la extension cerca de 6:1 de contraste.
+   ========================================================================== */
+
+.fondo {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint;
+  background: radial-gradient(
+    125% 85% at 50% 0%,
+    #1b2a5c 0%,
+    #0e1836 52%,
+    #080f24 100%
+  );
+}
+
+.fondo__capa {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  transform-origin: 50% 0;
+  /* Valor de arranque; a partir del montaje lo escribe el rAF del componente. */
+  transform: scale(1.16);
+  filter: blur(34px) saturate(1.18);
+  will-change: transform;
+}
+
+/* Sin `filter` el clon se veria NITIDO detras del contenido: un caos ilegible.
+   Mas vale quedarse solo con el gradiente. */
+@supports not (filter: blur(1px)) {
+  .fondo__capa {
+    display: none;
+  }
+}
+
+.fondo__velo {
+  position: absolute;
+  inset: 0;
+  background:
+    /* tinte turquesa arriba, de donde viene la luz en la propia pieza */
+    linear-gradient(180deg, rgb(59 167 179 / 10%), transparent 38%),
+    /* cuerpo del velo, mas abierto en el centro y cerrado en los bordes */
+      radial-gradient(
+        135% 105% at 50% 34%,
+        rgb(12 21 48 / 58%) 0%,
+        rgb(10 17 40 / 72%) 58%,
+        rgb(5 10 26 / 88%) 100%
+      );
+}
+
+/* La copia es decoracion: no anima, no transiciona y no recibe eventos. */
+.fondo__clon,
+.fondo__clon * {
+  animation: none !important;
+  transition: none !important;
+  pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo__capa {
+    will-change: auto;
+  }
+}

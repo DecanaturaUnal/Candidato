@@ -325,8 +325,19 @@ Genera dos archivos en `scripts/salida/`:
 - `diferencia.png` — mapa de diferencias: **negro = coincide, rojo = se desvía**
 
 E imprime el porcentaje de píxeles distintos, en total y **excluyendo las
-fotografías** (esa segunda cifra es la que mide la maquetación; en las fotos la
-diferencia viene de la recompresión del mockup, no del código).
+fotografías y la franja que ocupa la barra superior** (esa segunda cifra es la que
+mide la maquetación; en las fotos la diferencia viene de la recompresión del
+mockup, no del código, y la barra es cromo de la web que el mockup no tiene).
+
+El alto de esa franja lo mide `captura.mjs` sobre la página real —incluida la cola
+de la sombra— y lo deja en `scripts/salida/franja-barra.json`, de donde lo lee
+`comparar.mjs`. No está fijado a mano porque depende del ancho del viewport.
+
+> **La cifra de referencia es 13,61 %, no el 12,83 % de antes del rediseño.** No es
+> que la fidelidad haya empeorado: cambió el área medida. Comprobado sobre
+> exactamente la misma área, la página con barra y fondo nuevos casa con el mockup
+> **mejor** (13,61 %) que la pieza desnuda (13,82 %), porque el cristal claro de la
+> barra se parece más al blanco de la cabecera del mockup que el fondo que había.
 
 ---
 
@@ -557,13 +568,17 @@ Decanatura/
 │   │   ├── api/                 Manejadores de ruta
 │   │   ├── privacidad/          Política de datos (Ley 1581)
 │   │   ├── lienzo.css           Maqueta fiel al mockup
+│   │   ├── barra.css            Barra superior fija y firma
+│   │   ├── fondo.css            Fondo desenfocado y velo
 │   │   ├── extension.css        Bloques bajo la pieza
 │   │   ├── formulario.css       Modal y muro
 │   │   └── panel.css            Panel de moderación
 │   ├── components/
 │   │   ├── lienzo/              Piezas del diseño aprobado
 │   │   ├── extension/           Audiencias y muro
-│   │   └── formulario/          Modal y captcha
+│   │   ├── formulario/          Modal y captcha
+│   │   ├── marca/               Firma recreada para la barra
+│   │   └── cromo/               Barra superior y fondo desenfocado
 │   ├── config/
 │   │   ├── maqueta.ts           Geometría medida del mockup
 │   │   └── sitio.ts             Paleta, redes, responsable, fotos
@@ -588,6 +603,56 @@ compositada intermedia y no se pierde nitidez. Además el caso móvil sale grati
 
 El factor de «vista alejada» es la variable CSS `--canvas-scale` (por defecto
 `0.85`), en `src/app/lienzo.css`.
+
+### La barra superior y el fondo
+
+Son lo único que no sale del mockup: existen para que la pieza se lea dentro de una
+web y no como un PDF apoyado sobre un color.
+
+**La firma de la barra no es el PNG.** `public/marca/titulo-lockup.png` lleva
+«OSORIO» y «Facultad de Ingeniería y Arquitectura» en blanco, porque en la pieza se
+leen contra la franja turquesa. Sobre el cristal claro de la barra esa mitad
+desaparecería, y sobre uno oscuro desaparecería la otra: ningún fondo plano sirve
+para las dos. Se rehace como texto en `src/components/marca/LogoLockup.tsx`, con la
+misma jerarquía y los colores recolocados. Al ser texto escala sin perder nitidez y
+lo lee un lector de pantalla.
+
+**El fondo es una copia desenfocada del propio contenido**
+(`src/components/cromo/FondoDesenfocado.tsx`). Se clona en el cliente, no en el
+servidor: duplicar el árbol en el servidor habría duplicado el muro —que consulta
+Supabase al montarse— y los controles del formulario.
+
+Como el clon está ampliado, no basta con desplazarlo `-scrollY`: al estar
+magnificado necesita recorrer **más** píxeles para mostrar el mismo tramo. La
+compensación correcta **multiplica** por la escala:
+
+```
+T = -escala * scrollY + (alto del viewport / 2) * (1 - escala)
+```
+
+Dividir por la escala —el error fácil— deja el fondo moviéndose más despacio que el
+contenido, y la desviación crece con el scroll: arriba coincide y al final de la
+página va corrido. Medido sobre esta página, con el título de sección más cercano al
+centro de la pantalla como testigo:
+
+| compensación | inicio | mitad | final |
+|---|---|---|---|
+| `× escala` (la que se usa) | 264 px | **−5 px** | −208 px |
+| `÷ escala` | 343 px | 682 px | 1086 px |
+| `−scrollY` a secas | 343 px | 408 px | 539 px |
+
+El registro es exacto en el centro del viewport por construcción; lo que queda es
+error de escala, que crece con la distancia a ese centro y **no** con el scroll. Por
+eso la escala se mantiene baja (1,16): con `blur(34px)` basta un sangrado de ~100 px
+para que no asomen los bordes del clon, y cada décima de más es deriva regalada.
+
+**El velo oscuro que va encima no es decorativo.** La zona de extensión escribe en
+claro sobre oscuro; sin él, allí donde por detrás pasa la parte blanca de la pieza el
+texto quedaría ilegible. Con la densidad actual el peor caso deja el texto de la
+extensión cerca de 6:1 de contraste.
+
+Con `prefers-reduced-motion: reduce` el fondo queda estático y desenfocado, sin
+inercia ni seguimiento.
 
 ---
 

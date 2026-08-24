@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { Fira_Sans_Extra_Condensed, Fira_Sans } from "next/font/google";
+import {
+  Fira_Sans_Extra_Condensed,
+  Fira_Sans,
+  Parisienne,
+} from "next/font/google";
 import "./globals.css";
 
 /**
@@ -22,6 +26,22 @@ const condensada = Fira_Sans_Extra_Condensed({
   display: "swap",
 });
 
+/**
+ * Cursiva de "Candidato a decano" en la barra superior.
+ *
+ * La script original no viene con los archivos de la publicista y en el lockup solo
+ * existe rasterizada, con media firma en blanco (ver LogoLockup.tsx). Parisienne es
+ * la mas cercana de las disponibles: monolinea, inclinacion suave y letras
+ * separadas. Se sirve con next/font, es decir autoalojada -- no hay peticion a
+ * fonts.googleapis.com, asi que tampoco hay que abrir la CSP.
+ */
+const script = Parisienne({
+  variable: "--fuente-script",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
 const firaSans = Fira_Sans({
   variable: "--fuente-texto",
   subsets: ["latin"],
@@ -40,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${condensada.variable} ${firaSans.variable} antialiased`}
+      className={`${condensada.variable} ${firaSans.variable} ${script.variable} antialiased`}
     >
       <body>{children}</body>
     </html>

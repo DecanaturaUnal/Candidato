@@ -50,8 +50,9 @@
 }
 
 .audiencia {
-  /* Compensa la barra de navegacion al saltar con un ancla */
-  scroll-margin-top: clamp(16px, 4vw, 40px);
+  /* Compensa la barra superior FIJA al saltar con un ancla: sin esto, el titulo
+     de la seccion aterriza justo debajo de la barra y queda tapado. */
+  scroll-margin-top: calc(var(--barra-alto) + clamp(16px, 3vw, 32px));
   padding: clamp(18px, 2.6vw, 26px);
   background: rgb(255 255 255 / 4%);
   border-left: 3px solid var(--turquesa);

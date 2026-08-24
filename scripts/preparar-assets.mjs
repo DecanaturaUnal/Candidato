@@ -112,6 +112,54 @@ async function limpiar(archivo, salida, xSonda, quitarBloque = false) {
   );
 }
 
+/** Turquesa de la paleta del sitio (src/config/sitio.ts -> PALETA.turquesa). */
+const TURQUESA_SITIO = [59, 167, 179];
+
+/**
+ * Sello institucional: de cuadro turquesa a marca turquesa recortada.
+ *
+ * El archivo oficial viene como cuadro de color con la forma en blanco calada y las
+ * letras en negativo. Puesto tal cual sobre el cristal claro de la barra se veria
+ * como un rectangulo pegado encima. Lo que hace falta es lo contrario: la FORMA en
+ * turquesa y el fondo transparente, con las letras caladas dejando pasar la barra.
+ *
+ * Se invierte midiendo cuanto se acerca cada pixel al blanco, tomando como cero el
+ * color de la esquina --no se supone cual es-- y usando esa distancia como alfa. Al
+ * ser una rampa y no un umbral, los bordes suavizados del original se conservan y
+ * la marca no queda dentada.
+ */
+async function sello(archivo, salida) {
+  const { data, info } = await sharp(path.join(ORIGEN, archivo))
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const { width, height, channels } = info;
+
+  const luz = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
+  const fondo = luz(data[0], data[1], data[2]);
+  const rango = 255 - fondo;
+
+  for (let i = 0; i < data.length; i += channels) {
+    const cercania = (luz(data[i], data[i + 1], data[i + 2]) - fondo) / rango;
+    [data[i], data[i + 1], data[i + 2]] = TURQUESA_SITIO;
+    data[i + 3] = Math.round(Math.max(0, Math.min(1, cercania)) * 255);
+  }
+
+  await mkdir(DESTINO, { recursive: true });
+  const recortada = await sharp(data, {
+    raw: { width, height, channels },
+  })
+    // Fuera el margen que deja el cuadro original, ya transparente.
+    .trim()
+    .png({ compressionLevel: 9 })
+    .toFile(path.join(DESTINO, salida));
+
+  console.log(
+    `  ${salida.padEnd(20)} ${width}x${height} -> ` +
+      `${recortada.width}x${recortada.height} recortado, en turquesa de marca`,
+  );
+}
+
 console.log("Limpiando fondos horneados de los PNG de marca:");
 
 // xSonda: una columna que solo atraviese fondo, nunca la figura ni el texto.
@@ -121,6 +169,9 @@ await limpiar("REFERENTES GUSTAVIO oSORIO-21.png", "titulo-lockup.png", 40);
 // Estos dos ya venian con transparencia limpia: solo se copian normalizados.
 await limpiar("REFERENTES GUSTAVIO oSORIO-22.png", "eslogan.png", 5);
 await limpiar("REFERENTES GUSTAVIO oSORIO-23.png", "planilla-2.png", 5);
+
+// Sello de la universidad para la barra superior: caso aparte, se invierte.
+await sello("unal.png", "unal.png");
 
 // next/image guarda las versiones optimizadas en disco y no se entera de que los
 // originales cambiaron: sin esto se seguirian sirviendo los PNG viejos.

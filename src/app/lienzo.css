@@ -40,78 +40,35 @@
    --------------------------------------------------------------------------
    El lienzo es una pieza grafica de ancho fijo, asi que lo que lo rodea tiene que
    comportarse como el soporte donde esa pieza esta puesta, no como un relleno.
-   Se construye por capas, todas en CSS (sin imagenes ni peticiones extra):
 
-     1. division diagonal en el angulo de la propia campana
-     2. dos focos de color de marca, muy tenues, que dan direccion a la luz
-     3. rayado fino en el mismo angulo, para que el color no quede plano
-     4. vineta que cierra los bordes y empuja la mirada al centro
+   Ese soporte ya no se dibuja aqui. Antes eran cuatro capas de CSS plano
+   (diagonal, focos, rayado y vineta) y se leia como un telon: la pagina parecia
+   un PDF apoyado sobre un fondo. Ahora el fondo es una copia ampliada y
+   desenfocada del propio contenido, que acompana al scroll --ver fondo.css--, de
+   modo que el color de detras siempre pertenece a lo que se esta mirando.
 
-   Sobre ese fondo oscuro, el blanco de la pieza corta y se lee como impresa.
+   Lo que si sigue viviendo aqui es como se apoya la hoja: el ancho, el hueco que
+   deja la barra superior y la sombra que la despega del fondo.
    ========================================================================== */
 .escenario {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   min-height: 100vh;
-  background-color: var(--escena-base);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-block: clamp(28px, 5vw, 76px);
+  /* La barra superior es fija y no ocupa sitio en el flujo: se compensa aqui para
+     que la pieza no arranque por debajo de ella. Se reserva SIEMPRE el alto sin
+     compactar, no el compactado, porque si no el contenido daria un salto en
+     cuanto la barra se encoge a los 80 px de scroll. */
+  padding-block: calc(var(--barra-alto) + clamp(20px, 3vw, 44px))
+    clamp(28px, 5vw, 76px);
 }
 
-/* Capas 1 y 2: diagonal de marca + focos de color.
-   Van fijas al viewport: la pieza se desplaza, el soporte se queda quieto. Si
-   scrollaran con el contenido, mas abajo el escenario quedaria en color plano. */
-.escenario::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background:
-    /* Halo detras del lienzo: hace que la hoja se lea iluminada y no recortada */
-    radial-gradient(
-      46% 36% at 50% 24%,
-      rgb(128 186 224 / 15%),
-      transparent 72%
-    ),
-    radial-gradient(
-      60% 44% at 15% 4%,
-      rgb(59 167 179 / 32%),
-      transparent 70%
-    ),
-    radial-gradient(
-      54% 40% at 92% 84%,
-      rgb(235 234 137 / 11%),
-      transparent 72%
-    ),
-    linear-gradient(
-      calc(180deg + var(--angulo-marca)),
-      var(--escena-alta) 0 43.4%,
-      var(--escena-base) 44.2% 100%
-    );
-}
-
-/* Capas 3 y 4: rayado fino y vineta */
-.escenario::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      calc(90deg + var(--angulo-marca)),
-      rgb(255 255 255 / 3%) 0 1px,
-      transparent 1px 8px
-    ),
-    radial-gradient(
-      125% 95% at 50% 42%,
-      transparent 42%,
-      rgb(4 9 24 / 62%) 100%
-    );
-}
+/* El soporte oscuro que habia aqui -- diagonal, focos, rayado y vineta, todo fijo
+   al viewport -- lo sustituye ahora el clon desenfocado del propio contenido.
+   Vive en src/app/fondo.css y src/components/cromo/FondoDesenfocado.tsx. */
 
 /*
   El lienzo se despega con una sombra de tres tiempos -- contacto, media distancia
@@ -123,12 +80,27 @@
   width: min(100vw, calc(var(--canvas-ancho) * var(--canvas-scale)));
   container-type: inline-size;
   background: #fff;
+  /* El logo de la barra apunta aqui (#inicio): sin esto el salto deja el canto
+     superior de la pieza escondido detras de la barra fija. */
+  scroll-margin-top: var(--barra-alto);
+  /* Esquina apenas insinuada: es lo que separa "hoja apoyada dentro de una web"
+     de "PDF incrustado". Se anula mas abajo cuando la pieza va a sangre, porque
+     contra el borde de la pantalla no hay esquina que redondear. */
+  border-radius: 10px;
+  overflow: hidden;
   box-shadow:
     /* filo: separa el canto del lienzo del fondo incluso donde la pieza es azul */
     0 0 0 1px rgb(255 255 255 / 9%),
     0 2px 4px rgb(2 6 18 / 40%),
     0 14px 30px rgb(2 6 18 / 34%),
     0 52px 96px -22px rgb(2 6 18 / 62%);
+}
+
+/* Por debajo del ancho maximo la pieza va a sangre: sin esquinas ni filo lateral. */
+@media (max-width: 766px) {
+  .canvas {
+    border-radius: 0;
+  }
 }
 
 /* Filo superior apenas insinuado, para dar grosor al canto de la hoja. */

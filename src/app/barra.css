@@ -1,0 +1,167 @@
+/* ==========================================================================
+   BARRA SUPERIOR FIJA
+   --------------------------------------------------------------------------
+   Cristal claro, no oscuro: detras pasa el clon desenfocado del contenido, que es
+   mayoritariamente la pieza blanca. Un cristal oscuro se veria como un parche
+   pegado encima; uno claro se lee como parte del mismo documento.
+   ========================================================================== */
+
+:root {
+  --barra-alto: 78px;
+  --barra-alto-compacta: 62px;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --barra-alto: 58px;
+    --barra-alto-compacta: 52px;
+  }
+}
+
+.barra {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 100;
+  height: var(--barra-alto);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(12px, 4vw, 40px);
+  padding-inline: clamp(14px, 3.5vw, 40px);
+
+  background: rgb(244 250 255 / 74%);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+  border-bottom: 1px solid rgb(59 167 179 / 26%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    0 4px 20px rgb(12 21 48 / 7%);
+
+  transition:
+    height 280ms ease,
+    background-color 280ms ease,
+    box-shadow 280ms ease;
+}
+
+/* Pasados 80 px de scroll: mas baja, mas opaca y con la sombra mas marcada, para
+   que se despegue del contenido que empieza a pasar por debajo. */
+.barra[data-compacta="true"] {
+  height: var(--barra-alto-compacta);
+  background: rgb(244 250 255 / 88%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    0 6px 26px rgb(12 21 48 / 16%);
+}
+
+/* Sin backdrop-filter el cristal no filtra nada y el texto quedaria sobre el clon
+   borroso: se compensa con un fondo casi solido. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .barra {
+    background: rgb(244 250 255 / 97%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra {
+    transition: none;
+  }
+}
+
+.barra__firma {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  min-width: 0;
+}
+
+/* ==========================================================================
+   FIRMA
+   --------------------------------------------------------------------------
+   Reconstruccion tipografica del lockup. Ver el porque en LogoLockup.tsx: el PNG
+   original lleva media firma en blanco y sobre este cristal desapareceria.
+   Todo el bloque escala con --firma, para que compactarse sea cambiar un numero.
+   ========================================================================== */
+.firma {
+  --firma: clamp(0.62rem, 1.55vw, 0.86rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 1;
+}
+
+.barra[data-compacta="true"] .firma {
+  --firma: clamp(0.55rem, 1.35vw, 0.74rem);
+}
+
+.firma__cursiva {
+  font-family: var(--fuente-script), cursive;
+  font-size: calc(var(--firma) * 1.12);
+  color: var(--azul);
+  letter-spacing: 0.02em;
+  margin-bottom: calc(var(--firma) * -0.1);
+  padding-left: 0.15em;
+  transition: font-size 280ms ease;
+}
+
+.firma__nombre {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--firma) * 0.42);
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: calc(var(--firma) * 2.5);
+  letter-spacing: -0.005em;
+  line-height: 0.94;
+  transition: font-size 280ms ease;
+}
+
+.firma__gustavo {
+  color: var(--azul);
+}
+
+.firma__osorio {
+  color: var(--turquesa);
+}
+
+.firma__facultad {
+  font-family: var(--fuente-titulo), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: calc(var(--firma) * 0.86);
+  letter-spacing: 0.055em;
+  color: rgb(36 52 104 / 72%);
+  margin-top: calc(var(--firma) * 0.22);
+  transition: font-size 280ms ease;
+}
+
+/* En movil la facultad se cae: no cabe sin encoger el nombre hasta lo ilegible. */
+@media (max-width: 430px) {
+  .firma__facultad {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   SELLO DE LA UNAL
+   ========================================================================== */
+.barra__unal {
+  height: calc(var(--barra-alto) * 0.56);
+  width: auto;
+  flex: none;
+  object-fit: contain;
+  transition: height 280ms ease;
+}
+
+.barra[data-compacta="true"] .barra__unal {
+  height: calc(var(--barra-alto-compacta) * 0.56);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra__unal,
+  .firma__cursiva,
+  .firma__nombre,
+  .firma__facultad {
+    transition: none;
+  }
+}
