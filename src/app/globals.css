@@ -27,14 +27,21 @@ body {
 }
 
 /*
-  El fondo del escenario tambien va en <html>: asi el rebote del scroll en macOS e
-  iOS no descubre una franja blanca por encima o por debajo de la pagina.
+  El fondo de respaldo va en <html> y NO en <body>.
+
+  No es un detalle de estilo: el fondo dinamico (.fondo) se pinta con `z-index: -1`,
+  y en el orden de pintado de CSS los descendientes con z-index negativo van por
+  DEBAJO del fondo de las cajas en flujo, incluida la de <body>. Con <body> opaco el
+  clon desenfocado quedaba tapado y solo se veia el azul plano de siempre. En <html>
+  se pinta como fondo del lienzo del documento, por detras de todo, y de paso cubre
+  el rebote del scroll en macOS e iOS.
+
   `color-scheme: dark` oscurece la barra de desplazamiento para que acompane al
   soporte; dentro del lienzo se vuelve a claro, porque ahi los controles del
   formulario deben verse sobre la pieza, que es blanca.
 */
 html {
-  background: var(--fondo-escenario);
+  background: var(--fondo-respaldo);
   color-scheme: dark;
 }
 
@@ -46,7 +53,9 @@ html {
 }
 
 body {
-  background: var(--fondo-escenario);
+  /* Transparente a proposito: si tuviera fondo taparia el clon desenfocado.
+     Ver la nota de <html> justo arriba. */
+  background: transparent;
   color: var(--azul);
   font-family: var(--fuente-texto), system-ui, sans-serif;
 }

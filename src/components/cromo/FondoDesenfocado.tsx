@@ -37,6 +37,12 @@ import { useEffect, useRef } from "react";
  */
 const ESCALA = 1.16;
 
+/**
+ * Margen de sangrado, en px, para que el desenfoque no descubra el borde del clon.
+ * Tiene que superar el radio del blur de .fondo__capa.
+ */
+const SANGRADO = 120;
+
 /** Cuanto persigue el fondo a su objetivo en cada cuadro. Mas bajo = mas inercia. */
 const SUAVIZADO = 0.08;
 
@@ -67,13 +73,31 @@ export function FondoDesenfocado({ selector }: { selector: string }) {
 
     const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+    /*
+      La escala HORIZONTAL se calcula aparte, y suele ser bastante mayor.
+      El contenido es una columna estrecha centrada (unos 765 px): ampliada solo
+      1,16 deja franjas a los lados donde no hay nada que desenfocar, y ahi vuelve a
+      asomar el color plano. Estirarla a lo ancho hasta cubrir el viewport no cuesta
+      nada, porque el eje X no interviene en la sincronizacion con el scroll: la
+      deriva la manda unicamente la escala vertical. La deformacion no se aprecia
+      bajo 34 px de desenfoque.
+    */
+    let escalaX = ESCALA;
+    const calcularEscalaX = () => {
+      const columna = document.querySelector(`${selector} .canvas`);
+      const ancho = columna?.getBoundingClientRect().width ?? window.innerWidth;
+      return Math.max(ESCALA, (window.innerWidth + 2 * SANGRADO) / Math.max(ancho, 1));
+    };
+
     let objetivo = 0;
     let actual = 0;
     let animando = false;
     let cuadro = 0;
 
     const aplicar = () => {
-      capa.style.transform = `translate3d(0, ${actual.toFixed(2)}px, 0) scale(${ESCALA})`;
+      capa.style.transform =
+        `translate3d(0, ${actual.toFixed(2)}px, 0) ` +
+        `scale(${escalaX.toFixed(3)}, ${ESCALA})`;
     };
 
     /*
@@ -108,6 +132,7 @@ export function FondoDesenfocado({ selector }: { selector: string }) {
     };
 
     clonar();
+    escalaX = calcularEscalaX();
 
     if (sinMovimiento.matches) {
       // Estatico y desenfocado: sin inercia y sin seguir el scroll.
@@ -127,6 +152,7 @@ export function FondoDesenfocado({ selector }: { selector: string }) {
       clearTimeout(reloj);
       reloj = setTimeout(() => {
         clonar();
+        escalaX = calcularEscalaX();
         objetivo = calcularObjetivo();
         actual = objetivo;
         aplicar();
@@ -139,6 +165,7 @@ export function FondoDesenfocado({ selector }: { selector: string }) {
     // golpe en vez de arrastrarse desde una posicion vieja.
     const alVolver = () => {
       if (document.visibilityState !== "visible") return;
+      escalaX = calcularEscalaX();
       objetivo = calcularObjetivo();
       actual = objetivo;
       aplicar();
