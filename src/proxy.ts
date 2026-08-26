@@ -1,11 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  COOKIE_PORTON,
+  huellaDeClave,
+  igualSeguro,
+  paginaDelPorton,
+  portonActivo,
+  rutaExenta,
+} from "@/lib/porton";
 
 /**
  * Se ejecuta antes de renderizar cualquier ruta. Hace dos cosas:
  *
  *  1. Arma la Content-Security-Policy con un nonce nuevo en cada peticion.
- *  2. En /admin, refresca la sesion de Supabase y bloquea la cache.
+ *  2. Si hay porton puesto, cierra el sitio entero hasta que se escriba la clave.
+ *  3. En /admin, refresca la sesion de Supabase y bloquea la cache.
  *
  * Va en `proxy.ts` y no en `middleware.ts`: Next 16 renombro esa convencion y la
  * anterior quedo obsoleta.
@@ -62,7 +71,29 @@ export async function proxy(peticion: NextRequest) {
   let respuesta = NextResponse.next({ request: { headers: cabeceras } });
   respuesta.headers.set("Content-Security-Policy", csp);
 
-  const esPanel = peticion.nextUrl.pathname.startsWith("/admin");
+  // --- Porton -----------------------------------------------------------------
+  // Antes que nada: mientras el sitio no sea publico no debe servirse nada, ni
+  // portada ni API. Ver src/lib/porton.ts.
+  const ruta = peticion.nextUrl.pathname;
+  if (portonActivo() && !rutaExenta(ruta)) {
+    const guardada = peticion.cookies.get(COOKIE_PORTON)?.value ?? "";
+    const esperada = await huellaDeClave(process.env.CLAVE_PORTON ?? "");
+    if (!igualSeguro(guardada, esperada)) {
+      return new NextResponse(paginaDelPorton(ruta + peticion.nextUrl.search, false), {
+        status: 401,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+          "x-robots-tag": "noindex, nofollow",
+          // El porton se sirve entero desde aqui y no arranca React: no necesita
+          // nonce, y sus estilos en linea ya los permite la politica.
+          "Content-Security-Policy": csp,
+        },
+      });
+    }
+  }
+
+  const esPanel = ruta.startsWith("/admin");
   if (!esPanel) return respuesta;
 
   // --- Solo para el panel -----------------------------------------------------

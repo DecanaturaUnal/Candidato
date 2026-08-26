@@ -105,6 +105,7 @@ copy .env.example .env.local
 | `TURNSTILE_SECRET_KEY` | **Solo servidor** | **Sí** |
 | `IP_HASH_SALT` | **Solo servidor** | **Sí** |
 | `NEXT_PUBLIC_SITE_URL` | Enlace de acceso al panel | No |
+| `CLAVE_PORTON` | Cierra el sitio mientras no sea publico (opcional) | **Si** |
 
 Solo lo que lleva el prefijo `NEXT_PUBLIC_` llega al navegador. Si una clave
 secreta acabara con ese prefijo, quedaría publicada en el código del cliente.
@@ -460,6 +461,28 @@ Supabase y Cloudflare: quedan en el historial de git aunque después se borren.
 > `NEXT_PUBLIC_*` se incrustan en el paquete del navegador al compilar: cambiarlas
 > en Vercel no basta, hay que lanzar un *redeploy* para que el JavaScript servido
 > deje de llevar la clave vieja.
+
+### Desplegar antes de que el sitio sea público
+
+Mientras falten los textos definitivos conviene tener el sitio en su dominio real
+pero cerrado. Para eso está el **portón**: ponga `CLAVE_PORTON` en las variables de
+Vercel con una clave compartida y **todo** el sitio —portada, API y panel— queda
+detrás de una pantalla que la pide.
+
+| | |
+|---|---|
+| Qué cierra | Todas las rutas menos `/auth/…` y los archivos estáticos de marca |
+| Por qué `/auth/` queda fuera | Es el canje del enlace mágico. Quien modera puede abrirlo desde el correo en otro dispositivo, sin haber pasado por el portón; solo intercambia un token, no sirve contenido |
+| Dónde vive | `src/lib/porton.ts`, `src/proxy.ts` y `src/app/api/porton/route.ts` |
+| Cómo se quita | Borre `CLAVE_PORTON` de Vercel y vuelva a desplegar. Sin la variable el portón no existe |
+
+> **No es un sistema de autenticación y no pretende serlo.** Es una clave compartida
+> para que el sitio no quede a la vista mientras se termina. Lo que de verdad protege
+> los datos sigue siendo la RLS, y el acceso al panel sigue siendo el enlace mágico
+> contra la lista blanca de `admins`.
+
+La clave no se guarda en claro en la cookie: va como SHA-256 con la sal del sitio, y
+la cookie es `httpOnly` y `Secure`.
 
 Después del primer despliegue:
 
